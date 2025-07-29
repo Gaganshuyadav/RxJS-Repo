@@ -70,6 +70,7 @@ setTimeout(()=>{
 */
 
 /*(3). Observable Class */
+/*
 class Observable{
     constructor(blueprint){
         this.observable = blueprint;
@@ -77,7 +78,7 @@ class Observable{
  
     subscribe(observer){
         const closeFn = this.observable(observer);
-        return closeFn();
+        return closeFn; 
     }
 }
 
@@ -100,10 +101,81 @@ const oble1 = new Observable( function (observer){
 
 });
 
-oble1.subscribe({ 
+const unsub = oble1.subscribe({ 
     next: ( data) => console.log("obs1: ", data), 
     error: ( err) => console.log("obs1 error ",err),
     complete: () => console.log("obs1 complete")
 });
+     
+setTimeout(()=>{
 
+},500)
 
+*/
+
+/*(4). Observable Class with Guard */
+
+class ObserverGuard{
+    constructor(observer){
+        this.observer = observer;
+        this.isUnsubscribed = false; 
+    }
+
+    next(data){
+        if( this.isUnsubscribed || !this.observer.next){
+            return;
+        }
+
+        
+    }
+    
+    error(){
+    }
+
+    complete(){
+        
+    }
+}
+
+class Observable{
+    constructor(blueprint){
+        this.observable = blueprint;
+    }
+ 
+    subscribe(observer){
+        const closeFn = this.observable(observer);
+        return closeFn; 
+    }
+}
+
+//pass observable function in class
+const oble = new Observable( function (observer){          
+    
+    let counter = 1;
+    const producer = setInterval(()=>{
+        observer.next(counter++);      
+
+        if(counter===10){
+            observer.complete( producer);
+        } 
+ 
+    }, 1000);  
+
+    return ()=>{
+        clearInterval(producer); 
+    }
+
+});
+
+const unsub = oble.subscribe({ 
+    next: ( data) => console.log("obs: ", data), 
+    error: ( err) => console.log("obs error ",err),
+    complete: ( producerId) => { 
+        console.log("obs complete");
+        clearInterval(producerId); 
+    }
+});
+
+setInterval(()=>{
+    unsub();
+},6000); 

@@ -1,0 +1,46 @@
+//unicast
+//multicast
+
+//--------------------------------------------------------------------------------------------------------------
+Conditions for RxJS
+
+=================== RxJS Observable Behavior ===================
+
+1. After complete():
+   - No further next(), error(), or complete() calls will occur.
+   - Observable finalizes and automatically unsubscribes.
+
+2. After error():
+   - Observable finalizes and automatically unsubscribes.
+   - No further next() or complete() calls will occur.
+
+3. After unsubscribe():
+   - No further emissions (next, error, complete) will happen.
+   - Teardown/cleanup logic (if defined) will be executed.
+
+4. Manual Unsubscribe:
+   - Can stop a subscription anytime via subscription.unsubscribe().
+
+5. Auto-Unsubscribe on Error:
+   - Emits error and automatically unsubscribes unless catchError is used.
+
+6. Auto-Unsubscribe on Complete:
+   - Emits complete and automatically unsubscribes.
+
+7. Conditional Unsubscribe:
+   - Automatically unsubscribes using: take, takeUntil, takeWhile, first.
+
+8. Cleanup on Unsubscribe/Error/Complete:
+   - Teardown logic will run on unsubscribe, error, or complete.
+
+9. No Emission After Complete:
+   - Any next() or error() after complete() will be ignored.
+
+10. No Emission After Error:
+    - Any next() or complete() after error() will be ignored.
+
+11. Emission Filtering:
+    - Use filter, debounceTime, distinctUntilChanged, etc. to block emissions.
+
+
+//---------------------------------------------------------------------------------------------------------------
