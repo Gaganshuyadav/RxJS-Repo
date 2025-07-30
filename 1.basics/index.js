@@ -113,29 +113,9 @@ setTimeout(()=>{
 
 */
 
-/*(4). Observable Class with Guard */
+/*(4). Observable Class with complete */
 
-class ObserverGuard{
-    constructor(observer){
-        this.observer = observer;
-        this.isUnsubscribed = false; 
-    }
-
-    next(data){
-        if( this.isUnsubscribed || !this.observer.next){
-            return;
-        }
-
-        
-    }
-    
-    error(){
-    }
-
-    complete(){
-        
-    }
-}
+/* 
 
 class Observable{
     constructor(blueprint){
@@ -179,3 +159,116 @@ const unsub = oble.subscribe({
 setInterval(()=>{
     unsub();
 },6000); 
+
+*/
+
+
+/*(4). Observable Class with Guard Class */
+
+class ObserverGuard{
+    constructor(observer){
+        this.observer = observer;
+        this.isUnsubscribed = false; 
+    }
+
+    next(data){
+        if( this.isUnsubscribed || !this.observer.next){
+            return;
+        }
+
+        try{
+            this.observer.next(data);
+        }
+        catch(err){
+            this.unSubscribed();
+            throw err;
+        }
+
+        this.unSubscribed();
+        
+    }
+    
+    error(err){
+        if( this.isUnsubscribed || !this.observer.error){
+            return;
+        }
+
+        try{
+            this.observer.error(err);
+        }
+        catch(innerError){
+            this.unSubscribed();
+            throw innerError; 
+        }
+
+        this.unSubscribed();
+    }
+
+    complete(){
+        if( this.isUnsubscribed || !this.observer.complete){
+            return;
+        }
+
+        try{
+            this.observer.complete();
+        }
+        catch(err){
+            this.unSubscribed();
+            throw err;
+        }
+
+        this.unSubscribed();
+    }
+
+    unSubscribed(){
+        this.isUnsubscribed = true;
+    }
+}
+
+class Observable{
+    constructor(blueprint){
+        this.observable = blueprint;
+    }
+ 
+    subscribe(observer){
+        // add Observer Guard  
+        // const closeFn = this.observable(observer);
+        // return closeFn; 
+    }
+}
+
+//pass observable function in class
+const oble = new Observable( function (observer){          
+    
+    let counter = 1;
+    const producer = setInterval(()=>{
+        observer.next(counter++);      
+
+        if(counter===10){
+            observer.complete( producer);
+        } 
+ 
+    }, 1000);  
+
+    return ()=>{
+        clearInterval(producer); 
+    }
+
+});
+
+const unsub = oble.subscribe({ 
+    next: ( data) => console.log("obs: ", data), 
+    error: ( err) => console.log("obs error ",err),
+    complete: ( producerId) => { 
+        console.log("obs complete");
+        clearInterval(producerId); 
+    }
+});
+
+setInterval(()=>{
+    unsub();
+},6000); 
+
+
+
+
