@@ -44,3 +44,21 @@ Conditions for RxJS
 
 
 //---------------------------------------------------------------------------------------------------------------
+( difference between Promise and Observable)
+
+Promise:- 
+    -- eager to run( runs immediately)
+    -- cannot be cancelled once started
+    -- emits a single value
+    -- limited chaining( .then, .catch)
+    -- Not built-in Multicasting. ( multicasting means sharing a single execution of an Observable among multiple subscribers.)
+    -- Use Case:- ( one time async result , like: HTTP request)
+
+Observable:- 
+    -- lazy( runs only when subscribed)
+    -- can be cancelled( unsubscribed)
+    -- can emit multiple values over time
+    -- Rich operators for mapping, filtering, etc.
+    -- Supports multicasting with subjects
+    -- Use Case:- ( Streams, events, multiple values, async flows)
+ 

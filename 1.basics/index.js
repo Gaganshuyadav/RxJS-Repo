@@ -165,14 +165,17 @@ setInterval(()=>{
 
 /*(4). Observable Class with Guard Class */
 
+// /*
 class ObserverGuard{
     constructor(observer){
         this.observer = observer;
-        this.isUnsubscribed = false; 
+        this.isUnsubscribed = false;  
+        console.log("guard:-- ",this.observer);
     }
 
     next(data){
         if( this.isUnsubscribed || !this.observer.next){
+             this.unSubscribe();
             return;
         }
 
@@ -180,16 +183,15 @@ class ObserverGuard{
             this.observer.next(data);
         }
         catch(err){
-            this.unSubscribed();
+            this.unSubscribe();
             throw err;
         }
-
-        this.unSubscribed();
         
     }
     
     error(err){
         if( this.isUnsubscribed || !this.observer.error){
+             this.unSubscribe();
             return;
         }
 
@@ -197,15 +199,16 @@ class ObserverGuard{
             this.observer.error(err);
         }
         catch(innerError){
-            this.unSubscribed();
+            this.unSubscribe();
             throw innerError; 
         }
 
-        this.unSubscribed();
+        this.unSubscribe();
     }
 
     complete(){
         if( this.isUnsubscribed || !this.observer.complete){
+             this.unSubscribe();
             return;
         }
 
@@ -213,27 +216,54 @@ class ObserverGuard{
             this.observer.complete();
         }
         catch(err){
-            this.unSubscribed();
+            this.unSubscribe();
             throw err;
         }
 
-        this.unSubscribed();
+        this.unSubscribe();
     }
 
-    unSubscribed(){
+    unSubscribe(){
         this.isUnsubscribed = true;
+
+        if(this.closeFnc){
+            this.closeFnc();
+        }
     }
-}
+
+    isClosed(){
+        return this.isUnsubscribed;
+    }
+}  
 
 class Observable{
     constructor(blueprint){
         this.observable = blueprint;
+        console.log("normal:-- ",this.observable);
     }
  
     subscribe(observer){
         // add Observer Guard  
-        // const closeFn = this.observable(observer);
-        // return closeFn; 
+        const observerWithGuard = new ObserverGuard(observer);
+        console.log("||||||||||||| ");
+        console.log("||||||||||||| ");
+        console.log(observerWithGuard);
+        const closeFn = this.observable(observerWithGuard); 
+        // add close function to ObserverGuard 
+        observerWithGuard.closeFnc = closeFn;
+        const subscription = this.subscriptionMetadata(observerWithGuard);
+        return subscription; 
+    }
+
+    subscriptionMetadata(observerWithGuard){
+        return {
+            unSubscribe(){
+                observerWithGuard.unSubscribe();
+            },
+            isClosed(){
+                return observerWithGuard.isClosed();
+            }
+        }
     }
 }
 
@@ -244,9 +274,9 @@ const oble = new Observable( function (observer){
     const producer = setInterval(()=>{
         observer.next(counter++);      
 
-        if(counter===10){
-            observer.complete( producer);
-        } 
+        // if(counter===10){
+        //     observer.complete( producer);
+        // } 
  
     }, 1000);  
 
@@ -256,7 +286,7 @@ const oble = new Observable( function (observer){
 
 });
 
-const unsub = oble.subscribe({ 
+const subscription = oble.subscribe({ 
     next: ( data) => console.log("obs: ", data), 
     error: ( err) => console.log("obs error ",err),
     complete: ( producerId) => { 
@@ -264,11 +294,13 @@ const unsub = oble.subscribe({
         clearInterval(producerId); 
     }
 });
-
+ 
 setInterval(()=>{
-    unsub();
+    console.log("is closed: ",subscription.isClosed());
+    if(!subscription.isClosed()){
+        subscription.unSubscribe();
+    }
+    
 },6000); 
 
-
-
-
+// */
