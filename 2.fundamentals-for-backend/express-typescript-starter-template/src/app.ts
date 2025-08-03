@@ -2,6 +2,7 @@ import express from 'express';
 import { createReadStream } from 'fs';
 import { from, fromEvent, Observable, of} from "rxjs";
 import { EventEmitter } from 'stream';
+import { EventEmitterC } from '../more-helpers/events';
 
 const app = express();
 
@@ -454,27 +455,56 @@ class myEvent extends EventEmitter{}
 
 const mt = new myEvent();
 
-mt.on( "ironman", (data)=>{
-    console.log(`i am ironman {${data}}`);
+mt.on( "ironman1", (data)=>{
+    console.log(`i am ironman1 {${data}}`);
 })
 
-mt.emit("ironman","Tony Stark");
+mt.on("ironman1", (data)=>{
+    console.log(":::::::::::::::::::::::: ",data)
+})
+
+
+mt.emit("ironman1","Tony Stark");
 
 //------- ( with fromEvent) -------------------
 
 const mt1 = new myEvent();
 
-fromEvent( mt1, "ironman").subscribe((data)=>{
-    console.log( `i am ironman {${data}}    --fromEvent`);
+fromEvent( mt1, "ironman2").subscribe((data)=>{
+    console.log( `i am ironman2 {${data}}    --fromEvent`);
 });
 
 setTimeout(()=>{
-    mt1.emit("ironman", "Tony Stark");
+    mt1.emit("ironman2", "Tony Stark");
 },4000);
 
 */
 
 
+/*(7). ( fromEvent with my Custom event emitter( /more-helpers/events.ts)) :-   */
+
+// /*
+
+//------- ( Implementing Custom EventEmitter( /more-helpers/events.ts )  ) -------------------
+
+const myImpEvent = new EventEmitterC();
+
+myImpEvent.on("a", console.log);
+myImpEvent.on("a",console.log);
+
+myImpEvent.emit("a","hello world!! --a")
+
+//----( using fromEvent )---------------
+
+fromEvent( myImpEvent, "b").subscribe((data)=>{
+    console.log("i am listening using fromEvent: ",data);
+})
+
+myImpEvent.emit("b","hello world!! --b")
+
+
+
+// */
 
 
 
