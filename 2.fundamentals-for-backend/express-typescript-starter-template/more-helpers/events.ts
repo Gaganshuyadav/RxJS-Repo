@@ -11,6 +11,7 @@ export class EventEmitterC{
     }
 
     on( eventName:string, eventHandler: Function){
+        console.log("on method ????")
         if( !this.isEventTypeExists(eventName)){
             this.events[eventName] = [];
         }
@@ -18,6 +19,8 @@ export class EventEmitterC{
     }
 
     off( eventName:string, eventHandler:Function){
+        console.log("off method ????????")
+        console.log(eventName," ::::::::::::::: ",eventHandler)
         if( !this.isEventTypeExists(eventName)){
             return;
         }
@@ -25,6 +28,7 @@ export class EventEmitterC{
     }
     
     emit( eventName:string, data:any){
+        console.log("emit method ????????????")
         if(!this.isEventTypeExists(eventName)){
             return;
         }
@@ -32,5 +36,23 @@ export class EventEmitterC{
             handler(data);
         })
     }
+
+    addListener(){
+        console.log("add listener ||-------------")
+    }
+
+    removeListener(){
+        console.log("remove listener ||-------------")
+    }
+
+    addEventListener(){
+        console.log("add event listener ||-------------")
+    }
+
+    removeEventListener(){
+        console.log("remove event listener ||-------------")
+    }
+    
+
 }
 

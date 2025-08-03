@@ -1,6 +1,6 @@
 import express from 'express';
 import { createReadStream } from 'fs';
-import { from, fromEvent, Observable, of} from "rxjs";
+import { from, fromEvent, interval, Observable, of, range, timer} from "rxjs";
 import { EventEmitter } from 'stream';
 import { EventEmitterC } from '../more-helpers/events';
 
@@ -481,9 +481,9 @@ setTimeout(()=>{
 */
 
 
-/*(7). ( fromEvent with my Custom event emitter( /more-helpers/events.ts)) :-   */
+/*(7). ( fromEvent with my Custom event emitter( /more-helpers/events.ts)) :-  */
 
-// /*
+/*
 
 //------- ( Implementing Custom EventEmitter( /more-helpers/events.ts )  ) -------------------
 
@@ -496,20 +496,93 @@ myImpEvent.emit("a","hello world!! --a")
 
 //----( using fromEvent )---------------
 
-fromEvent( myImpEvent, "b").subscribe((data)=>{
+// ---- ( this method calls one method from  these [ on, addListener, addEventListener ], on subscribe ) -----------
+const subImpE = fromEvent( myImpEvent, "b").subscribe((data)=>{
     console.log("i am listening using fromEvent: ",data);
 })
 
+
 myImpEvent.emit("b","hello world!! --b")
 
+// ---- ( on unsubscribe, off method automatically call []  ) -----------
+
+subImpE.unsubscribe();
+//this method not work , cause the handler for "b" is deleted using call one of these methods [ on, addListener, addEventListener ]
+myImpEvent.emit("b","000000000000000000000")
 
 
-// */
+
+*/
 
 
 
+/*(8). ( interval) :-   */
+
+/*
+
+const intervalObs = interval(1000);
+
+//// --give count from 0 to infinity
+intervalObs.subscribe(console.log);  
 
 
+//// --we can stop interval on unsubscribe condition
+const ilObsSub = intervalObs.subscribe((data)=>{
+    if(data===10){
+        ilObsSub.unsubscribe();
+    }
+    console.log("second interval: ",data);
+})
+
+
+//// --we can call api on interval, and unsubscribe when interval count greater then 4
+const intObsSub2 = intervalObs.subscribe((intervalData)=>{
+
+    if((intervalData+1)>4){
+        intObsSub2.unsubscribe();
+        return;
+    }
+
+    from( fetch(`https://jsonplaceholder.typicode.com/comments/${intervalData+1}`))
+    .subscribe((resData)=>{
+        from(resData.json())
+        .subscribe((resJsonData)=>{
+            console.log("data: ",resJsonData);
+        }) 
+    })
+})
+
+
+*/
+
+/*(9). timer */
+
+/* 
+
+//// ---- (runs first time only , if we gave one argument ) ----
+timer( 1000).subscribe((data)=>{
+    console.log(" 1: ",data);
+})
+
+//// ---- (runs first time for first argument and after that interval starts with second value as timer , if two arguments we gave ) ----
+timer( 2000, 6000).subscribe((data)=>{
+    console.log(" 2: ",data);
+})   
+
+//// ---- ( give time also as a timer ) ----
+timer( new Date("08/03/2025 17:30:30"), 7000).subscribe((data)=>{
+    console.log(" 3: ",data); 
+})
+
+*/
+
+
+/*(10). Range Operator */
+
+// it is synchronous operation
+console.log("start");
+range(10,10).subscribe(console.log);
+console.log("end");
 
 
 
