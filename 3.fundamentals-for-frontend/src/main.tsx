@@ -1,4 +1,5 @@
-import { fromEvent} from "rxjs";
+import { from, fromEvent} from "rxjs";
+import { ajax } from "rxjs/ajax";
 
 
 
@@ -37,6 +38,57 @@ buttonEventObs.subscribe((data)=>{
 });
 
 */
+
+
+
+
+/*(2). AJAX operator ( under the hood is uses XMLHttpRequest) */
+
+// /*
+
+// const httpReq = ajax("https://jsonplaceholder.typicode.com/todos");
+
+// const httpReq = ajax({ 
+//   url: "https://jsonplaceholder.typicode.com/posts",
+//   method:"post",
+//   headers: {
+//     Authorization:"Bearer sdfsdfdskjfsdkvmw324n23svd",
+//     Accept:"application/json"
+//   },
+//   body:{
+//     title:"new mask same task",
+//     body:"i am coming, just waiting.... ",
+//     userId:1
+//   }
+// });
+
+// const httpReq = ajax.get("https://jsonplaceholder.typicode.com/posts");
+
+// const httpReq = ajax.getJSON("https://jsonplaceholder.typicode.com/posts");
+
+const httpReq = ajax.post("https://jsonplaceholder.typicode.com/posts", { hello:"world"}, { "x-some-optional-header":"value"});
+httpReq.subscribe(console.log);
+
+
+
+// httpReq.subscribe((resData)=>{
+//     console.log(resData.response);
+// })
+
+httpReq.subscribe({
+  next: (data)=>{
+    console.log("data ",data);
+  },
+  error: ( err)=>{
+    console.log("error: ",err);
+  },
+  complete: ()=>console.log("API working fine !!")
+})
+
+
+// */
+
+
 
 
 

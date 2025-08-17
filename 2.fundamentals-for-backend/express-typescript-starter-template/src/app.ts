@@ -1,8 +1,9 @@
 import express from 'express';
 import { createReadStream } from 'fs';
-import { from, fromEvent, interval, Observable, of, range, timer} from "rxjs";
+import { firstValueFrom, from, fromEvent, generate, iif, interval, lastValueFrom, Observable, of, range, timer } from "rxjs";
 import { EventEmitter } from 'stream';
 import { EventEmitterC } from '../more-helpers/events';
+import { ajax } from "rxjs/ajax";
 
 const app = express();
 
@@ -35,9 +36,9 @@ const obs = new Observable((observer)=>{
     }, 1000)
 
     //-- unsubscribe //-- cleanup function
-    // return ()=>{
-    //     clearInterval(producer);
-    // }
+    return ()=>{
+        clearInterval(producer);
+    } 
 })
 
 
@@ -107,7 +108,7 @@ const sub = obs.subscribe((data)=>{
 //     -- Rich operators for mapping, filtering, etc.
 //     -- Supports multicasting with subjects
 //     -- Use Case:- ( Streams, events, multiple values, async flows)
- 
+
 /*
 
 // --------------------- eager to run, their is no logic for unsubscribe or cancel feature
@@ -146,6 +147,7 @@ const obs = new Observable((observer)=>{
     fetchData();
 
     return ()=>{
+        console.log("abort api ")
         abortController.abort();
     }
     
@@ -315,8 +317,11 @@ const pro3 = new Promise(( resolve, reject)=>resolve("resolve promise 3"));
 const proArr = [ pro1, pro2, pro3];
 const proArrObs = from(proArr);
 
-proArrObs.subscribe((data)=>{
-    console.log(data);
+proArrObs.subscribe((promiseData)=>{
+    console.log(promiseData);
+    promiseData.then((data)=>{
+        console.log("data: ",data);
+    })
 })
 
 
@@ -507,7 +512,7 @@ myImpEvent.emit("b","hello world!! --b")
 // ---- ( on unsubscribe, off method automatically call []  ) -----------
 
 subImpE.unsubscribe();
-//this method not work , cause the handler for "b" is deleted using call one of these methods [ on, addListener, addEventListener ]
+//this method not work , cause the handler for "b" is deleted using call one of these methods [ off, removeListener, removeEventListener ]
 myImpEvent.emit("b","000000000000000000000")
 
 
@@ -577,12 +582,79 @@ timer( new Date("08/03/2025 17:30:30"), 7000).subscribe((data)=>{
 */
 
 
-/*(10). Range Operator */
+/*(10). Range Operator */                // it is synchronous operation
 
+/*
 // it is synchronous operation
 console.log("start");
 range(10,10).subscribe(console.log);
 console.log("end");
+*/
+
+
+/*(11). generate  Operator */      // same as like for loop           // it is synchronous operation
+
+/*
+
+//// generate numbers based on condition( same as for loop)
+
+const genNumOp = generate({
+    initialState: 1,
+    condition: (c) => c <= 20 ,
+    iterate: (i) => i + 2,
+    resultSelector: (r:number)=>"count: "+r
+})
+
+genNumOp.subscribe(console.log);
+
+//// generate dates logic
+
+
+
+const startDate = new Date("10/03/2025");
+const endDate = new Date("10/22/2025");
+
+function nextDate( date:Date){
+    const newDate = new Date( date.setDate( date.getDate() + 1));
+    return newDate;
+}
+
+
+
+const genDateOp = generate({
+    initialState: startDate, 
+    condition: (c:Date) => c.getDate() < endDate.getDate(),
+    iterate: (i)=> nextDate(i),
+    resultSelector: (r:Date)=> "Curr Date: " + r
+})
+
+genDateOp.subscribe(console.log);
+      
+*/
+
+/*(12). iif operator */ 
+
+let isAuthenticated = true;
+
+const iifObs = iif( ()=>isAuthenticated, from(["tony","cap"]), of("guard"));
+
+iifObs.subscribe(console.log);
+
+isAuthenticated=false;
+
+
+iifObs.subscribe((data)=>{
+    console.log("after change::- ",data);
+});
+
+
+isAuthenticated = true;
+
+setTimeout(()=>{
+    iifObs.subscribe((data)=>{
+        console.log(":::: ",data);
+    })
+},7000);
 
 
 
@@ -591,18 +663,61 @@ console.log("end");
 
 
 
+/*(----). firstValueFrom and lastValueFrom  */
+
+////// number array example 
+
+/*
+const arr:number[] = [ 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
+
+firstValueFrom(from(arr))
+.then((data)=>{
+  console.log("firstValueFrom data:: ",data);
+})
+.catch((err)=>{
+  console.log("err1:: ",err);
+})
+
+lastValueFrom(from(arr))
+.then((data)=>{
+  console.log("lastValueFrom data:: ",data);
+})
+.catch((err)=>{
+  console.log("err1:: ",err);
+})
 
 
 
 
+////// api example 
 
+// first value from --
+from(fetch("https://jsonplaceholder.typicode.com/todos")).subscribe((resDate) => {
+    from(resDate.json()).subscribe((rjData) => {
+        firstValueFrom(from(rjData))
+            .then((data) => {
+                console.log("firstValueFrom data:: ", data);
+            })
+            .catch((err) => {
+                console.log("err1:: ", err);
+            })
+    })
+})
 
+//last value from --
+from(fetch("https://jsonplaceholder.typicode.com/todos")).subscribe((resDate) => {
+    from(resDate.json()).subscribe((rjData) => {
+        lastValueFrom(from(rjData))
+            .then((data) => {
+                console.log("lastValueFrom data:: ", data);
+            })
+            .catch((err) => {
+                console.log("err1:: ", err);
+            })
+    })
+})
 
-
-
-
-
-
+*/
 
 
 

@@ -37,21 +37,21 @@ export class EventEmitterC{
         })
     }
 
-    addListener(){
-        console.log("add listener ||-------------")
-    }
+    // addListener(){
+    //     console.log("add listener ||-------------")
+    // }
 
-    removeListener(){
-        console.log("remove listener ||-------------")
-    }
+    // removeListener(){
+    //     console.log("remove listener ||-------------")
+    // }
 
-    addEventListener(){
-        console.log("add event listener ||-------------")
-    }
+    // addEventListener(){
+    //     console.log("add event listener ||-------------")
+    // }
 
-    removeEventListener(){
-        console.log("remove event listener ||-------------")
-    }
+    // removeEventListener(){
+    //     console.log("remove event listener ||-------------")
+    // }
     
 
 }
