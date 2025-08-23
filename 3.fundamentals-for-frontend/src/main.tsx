@@ -1,4 +1,4 @@
-import { from, fromEvent} from "rxjs";
+import { concat, defer, from, fromEvent, iif, interval, of, range, timer} from "rxjs";
 import { ajax } from "rxjs/ajax";
 
 
@@ -40,11 +40,9 @@ buttonEventObs.subscribe((data)=>{
 */
 
 
-
-
 /*(2). AJAX operator ( under the hood is uses XMLHttpRequest) */
 
-// /*
+/*
 
 // const httpReq = ajax("https://jsonplaceholder.typicode.com/todos");
 
@@ -86,7 +84,168 @@ httpReq.subscribe({
 })
 
 
-// */
+*/
+
+
+/*(3). iif Operator */             /* refer :- backend( (12)- iif operator)*/
+
+/*
+
+////// example 1:-
+
+const select = document.querySelector("select") as HTMLSelectElement;
+const btn = document.querySelector(".btnCA") as HTMLButtonElement;
+
+const iffObs = iif(
+                  ()=>{return select.value==="posts"}, 
+                  from(ajax.getJSON("https://jsonplaceholder.typicode.com/posts/1")),
+                  from(ajax.getJSON("https://jsonplaceholder.typicode.com/todos/1")) 
+                )
+
+
+
+
+function callApi(data:any){
+  iffObs.subscribe(console.log);
+}
+
+const btnObs = fromEvent(btn, "click");
+btnObs.subscribe(callApi);
+
+*/
+
+/*(4). differ operator */
+
+/*
+
+////// example 1:-
+
+const select = document.querySelector("select") as HTMLSelectElement;
+const btn = document.querySelector(".btnCA") as HTMLButtonElement;
+
+ 
+const deferObs = defer(()=>{
+
+  switch(select.value){
+    case "posts":
+      return from(ajax.getJSON("https://jsonplaceholder.typicode.com/posts/1"));
+    case "comments":
+      return from(ajax.getJSON("https://jsonplaceholder.typicode.com/comments/1"));
+    case "albums":
+      return from(ajax.getJSON("https://jsonplaceholder.typicode.com/albums/1"));
+    case "todos":
+      return from(ajax.getJSON("https://jsonplaceholder.typicode.com/todos/1"));
+    default:
+      return from([]);
+  }
+  
+})
+
+
+function callApi(data:any){
+  deferObs.subscribe(console.log);
+
+}
+
+const btnObs = fromEvent(btn, "click");
+btnObs.subscribe(callApi);
+
+
+
+////// example 2:-
+
+const btn = document.querySelector(".btnCA");
+const deferObs = defer(()=>of((new Date()).getSeconds()) );
+
+btn?.addEventListener("click", ()=>{
+  console.log("==")
+  deferObs.subscribe(console.log);
+})
+
+
+
+////// example 3:-
+
+const btn = document.querySelector(".btnCA");
+const deferObs = defer(()=>of((new Date()).getSeconds()) );
+
+btn?.addEventListener("click", ()=>{
+  console.log("==")
+  deferObs.subscribe(console.log);
+})
+
+setInterval(()=>{
+  deferObs.subscribe((data)=>{ console.log("setTimeout data:: ",data)});
+},6000);
+
+
+
+
+////// example 4:-
+
+
+const btn = document.querySelector(".btnCA");
+let id = 1;
+
+const deferObs = defer(()=>{
+
+  if( id>3){
+    return from(ajax.getJSON(`https://jsonplaceholder.typicode.com/posts/${id}`));
+  }
+  else{
+    return from(ajax.getJSON(`https://jsonplaceholder.typicode.com/comments/${id}`));
+  }
+  
+});
+
+btn?.addEventListener("click", ()=>{
+  deferObs.subscribe(console.log);
+  id++;
+})
+
+*/
+
+/* Join Creation Operator */
+/*(5). concat operator */                               /* it subscribe observables one by one(sequentially) , if error occur in any observavles then it stops and concat never complete and also not subscribe next observable   */
+
+/*
+//// example:-1
+
+const obs1 = from(["i","am","ironman"]);
+const obs2 = ajax.getJSON("https://jsonplaceholder.typicode.com/todos");
+const obs3 = of(1,2,3,4,5);
+
+concat( obs1, obs2, obs3).subscribe({
+  next:console.log,
+  complete:()=>{console.log("all observables completed");},
+  error:()=>{
+    console.log("error occurs")
+  }
+});  
+
+//// example:-2 ( intervalObs never complete cause it is an interval, and rangeObs never start, which means concat Obs never completed )
+
+const intervalObs = interval(1000);
+const rangeObs = range(1,5);
+
+concat(intervalObs,rangeObs).subscribe(console.log);
+
+*/
+
+
+/*(6). merge operator */      /* concurrently subscribe every observable, but it completed only if every observable is completed */   
+
+const intervalObs = timer( 1000, 3000);
+
+intervalObs.subscribe(console.log);
+
+
+
+
+
+
+
+
 
 
 

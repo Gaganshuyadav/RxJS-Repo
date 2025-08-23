@@ -632,8 +632,12 @@ genDateOp.subscribe(console.log);
       
 */
 
+
+
+
 /*(12). iif operator */ 
 
+/*
 let isAuthenticated = true;
 
 const iifObs = iif( ()=>isAuthenticated, from(["tony","cap"]), of("guard"));
@@ -656,7 +660,7 @@ setTimeout(()=>{
     })
 },7000);
 
-
+*/
 
 
 
