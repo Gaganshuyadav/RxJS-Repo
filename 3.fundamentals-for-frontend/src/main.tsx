@@ -1,4 +1,4 @@
-import { concat, defer, from, fromEvent, iif, interval, of, range, timer} from "rxjs";
+import { combineLatest, concat, defer, from, fromEvent, iif, interval, merge, of, range, timer} from "rxjs";
 import { ajax } from "rxjs/ajax";
 
 
@@ -114,7 +114,7 @@ btnObs.subscribe(callApi);
 
 */
 
-/*(4). differ operator */
+/*(4). defer operator */
 
 /*
 
@@ -235,15 +235,79 @@ concat(intervalObs,rangeObs).subscribe(console.log);
 
 /*(6). merge operator */      /* concurrently subscribe every observable, but it completed only if every observable is completed */   
 
-const intervalObs = timer( 1000, 3000);
+/*
 
-intervalObs.subscribe(console.log);
+//// example:1 
+// const intervalObs1 = timer( 6000, 3000);
+// const intervalObs2 = timer( 3000, 3000);
+
+// merge( intervalObs1, intervalObs2).subscribe({
+//   next:console.log,
+//   complete: ()=>{
+//     console.log("completed");
+//   }
+// })
+
+//// example:2 ( concurrently) ( we can also set concurrent factor)
+const apiObs1 = ajax.getJSON("https://jsonplaceholder.typicode.com/todos")
+const apiObs2 = ajax.getJSON("https://jsonplaceholder.typicode.com/posts");
+
+// merge( apiObs1, apiObs2, 1).subscribe({             //now acts as concat operator, cause subscribe only one and then move to another
+// merge( apiObs1, apiObs2, 2).subscribe({             // now as concurrently, cause subscribe 2 at a time
+merge( apiObs1, apiObs2).subscribe({
+  next:console.log,
+  complete: ()=>{
+    console.log("Completed");
+  }
+})
+
+*/
+
+/*(7). combineLatest operator */
+
+/*
+//// example:1:- using timers ( it emits value, only if all observables emits at least one value, and this cause loss of old values which emits value before the all observables emits their values)
+
+const t1 = timer( 0, 1000);
+const t2 = timer( 5000, 1000);
+
+combineLatest( [t1, t2]).subscribe(console.log);
+//// combineLatest( {t1, t2} ).subscribe(console.log); 
 
 
 
+//// example:2:- dom-based example
+
+const width = fromEvent(document.querySelector(".width2") as HTMLInputElement, "input");
+const height = fromEvent(document.querySelector(".height2") as HTMLInputElement, "input");
+const result = document.querySelector(".resultAOWH") as HTMLInputElement;
+
+combineLatest( [width, height]).subscribe((dataArr)=>{
+
+  const firstNum = dataArr[0].target ? Number((dataArr[0].target as HTMLInputElement).value) : 0;
+  let secondNum = dataArr[1].target ? Number((dataArr[1].target as HTMLInputElement).value) : 0;
+  result.innerText = String(firstNum*secondNum);
+})
+ 
+*/
 
 
+/*(8). forkJoin operator */   /* it emits the last values of each observables in an array */
 
+/*
+//// example:1:- using timers ( it emits value, only if all observables emits at least one value, and this cause loss of old values which emits value before the all observables emits their values)
+
+const o1 = of( 11, 20, 3, 14);
+const o2 = timer(1500);
+const o3 = from([ "A", "B", "C"]);
+const o4 = Promise.resolve(true);
+
+combineLatest( [ o1, o2, o3, o4]).subscribe(console.log);
+
+
+*/
+
+/*(9). zip operator */
 
 
 
