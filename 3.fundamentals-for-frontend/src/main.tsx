@@ -1,4 +1,4 @@
-import { combineLatest, concat, defer, from, fromEvent, iif, interval, merge, of, range, timer} from "rxjs";
+import { combineLatest, concat, defer, from, fromEvent, iif, interval, merge, of, race, range, timer, zip} from "rxjs";
 import { ajax } from "rxjs/ajax";
 
 
@@ -307,11 +307,54 @@ combineLatest( [ o1, o2, o3, o4]).subscribe(console.log);
 
 */
 
-/*(9). zip operator */
+/*(9). zip operator */  /* it gives only combined values */
+
+/*
+
+//// example:1  
+
+const o1 = of( "A", "B", "C", "D", "E");
+const o2 = of( 1, 2, 3);
+
+zip( o1, o2).subscribe(console.log);
 
 
+//// example:2  
+
+const t1 = of( 21, 2132);
+const t2 = interval(1000);
+
+zip( t1, t2).subscribe(console.log);
 
 
+//// example:3
+
+const oo1 = of( 10, 20, 30);
+const oo2 = of( 11, 21, 31, 41);
+const oo3 = of( 12, 22);
+const oo4 = of( 13, 23, 33, 43, 53);
+
+zip( oo1, oo2, oo3, oo4 ).subscribe(console.log);
+
+*/
+
+
+/*(10). race operator */    /* takes multiple observables and emits the value from the first one that emits a value */
+
+//// example:1:-    // it always picks the fast one , that emits or takes very less time
+// const t1 = interval( 1000);
+// const t2 = interval( 200);
+// const t3 = interval( 3000);
+
+// race( t1, t2, t3).subscribe(console.log);
+
+
+//// example:2:-    // 
+const o1 = of( "A", "B", "C", "D");
+const o2 = of( 2222, 3333, 4444, 5555);
+const o3 = interval( 1000);
+
+race( o1, o2, o3).subscribe(console.log);
 
 
 
