@@ -1,7 +1,9 @@
-import { combineLatest, concat, defer, from, fromEvent, iif, interval, merge, of, race, range, timer, zip} from "rxjs";
+import { combineLatest, concat, concatAll, concatMap, defer, EMPTY, exhaustMap, filter, from, fromEvent, iif, interval, map, merge, mergeAll, mergeMap, Observable, of, race, range, switchMap, timer, zip} from "rxjs";
 import { ajax } from "rxjs/ajax";
 
 
+/*Creation Operators:- Used to create an Observable */
+/*Pipeable Operators:- Takes an Observable as inout and returns a new Observable */
 
 
 /*(1). ( fromEvent operator)---------------------------------------------------- */
@@ -341,6 +343,8 @@ zip( oo1, oo2, oo3, oo4 ).subscribe(console.log);
 
 /*(10). race operator */    /* takes multiple observables and emits the value from the first one that emits a value */
 
+/* 
+
 //// example:1:-    // it always picks the fast one , that emits or takes very less time
 // const t1 = interval( 1000);
 // const t2 = interval( 200);
@@ -349,7 +353,7 @@ zip( oo1, oo2, oo3, oo4 ).subscribe(console.log);
 // race( t1, t2, t3).subscribe(console.log);
 
 
-//// example:2:-    // 
+//// example:2:- between synchronous and asynchronous, it always choose synchronous   // 
 const o1 = of( "A", "B", "C", "D");
 const o2 = of( 2222, 3333, 4444, 5555);
 const o3 = interval( 1000);
@@ -357,4 +361,251 @@ const o3 = interval( 1000);
 race( o1, o2, o3).subscribe(console.log);
 
 
+
+//// example:3:- race is useful , if we need fast data ( based on fast network )  // 
+
+*/
+
+/*(11). EMPTY operator */
+
+/*
+
+//// example:1  ( Use EMPTY when you want an observable that does nothing and completes immediately)
+
+EMPTY.subscribe({
+  next: () => console.log('Will never happen'),
+  complete: () => console.log('Done')
+});
+
+
+//// example:2 
+
+let isDownloaded = false;
+
+const download = defer(()=>{
+  
+  if( isDownloaded){
+    return EMPTY;
+  }
+  else{
+    return from(ajax.getJSON("https://jsonplaceholder.typicode.com/posts/1"));
+  }
+})
+
+const downloadBtn = document.querySelector(".downloadBtn") as HTMLButtonElement;
+
+fromEvent( downloadBtn, "click").subscribe(()=>{
+  
+  download.subscribe({
+    next: (data)=>{
+      isDownloaded = true;
+      console.log("downloaded data ",data);
+    },
+    complete: ()=>{
+      console.log("Download Done!!")
+    }
+  })
+})
+
+*/
+
+
+/* Pipeable Operators:- Pipeable Operator ia a pure Higher-Order Function takes an Observable as input and returns a new Observable
+Pipeable Operators Categories:- Transformation, Filtering, Conditional, Mathematical/Aggregate, Join, Utility
+*/
+
+// const obs = of( 1, 2 , 3, 4, 5, 6);
+// obs.pipe( 
+//   filter((n)=>{ return n%2===0}), 
+//   map((n)=>n+n)).subscribe((data)=>{
+//     console.log(data);
+// });
+
+
+
+/*(12). map */
+
+/* 
+//// example-
+
+type User = {id:number, name:string, username:string, email:string};
+
+(ajax.getJSON("https://jsonplaceholder.typicode.com/users") as Observable<User[]>).subscribe((data)=>{ 
+    from<Array<User>>(data)
+      .pipe( map((user)=>user.username))
+      .subscribe(console.log)  
+  } 
+);
+
+console.log(";;;;;;;;;;;;;;;;;;;;;;;;;;;");
+
+(ajax.getJSON("https://jsonplaceholder.typicode.com/users") as Observable<User[]>).subscribe((data)=>{ 
+    from<Array<User>>(data)
+      .pipe( map((user)=>user.username.toUpperCase() ))
+      .subscribe(console.log)  
+  } 
+);
+
+*/
+
+
+/*(13). Higher-Order Observable:- a higher-order observable is simply an observable whose values are themselves observables. */
+/*
+
+//// example:1 
+
+of(1, 2, 3, 4, 5)
+  .pipe( 
+    map((val)=>ajax.getJSON(`https://jsonplaceholder.typicode.com/users/${val}`) ) 
+  )
+  .subscribe((data)=>{
+  // subscribe each observable
+  data.subscribe(console.log);
+});
+
+//// example:2
+
+of(1,2,3).pipe( map((val)=>range( val, 3))).subscribe((data)=>{
+  data.subscribe(console.log);
+  console.log("----")
+})
+
+*/
+
+
+/*(Higher Order Mapping Operators:- concatMap, mergeMap, switchMap, exhaustMap) 
+    and 
+  (Higher Order Flattening Operators:- concatAll, mergeAll, switchAll, exhaustAll, combineLatestAll)
+*/
+
+/*(14). concatMap operator :- it creates an queue and manage inner observables, and add and wait from first async data , and then first getting data , then call to next */
+
+/* Use Case:- when you need to preserve order and run tasks sequentially[ queued api calls, file uploads, transaction processing ]*/
+
+/*
+
+//// without concatMap
+from([ 1, 2, 3, 4, 5])
+  .pipe(
+    map((val)=>{
+      return of(val*3);
+    })
+  )
+  .subscribe((o)=>{
+    o.subscribe(console.log);
+  })
+
+  //// with concatMap
+  from([ 1, 2, 3, 4, 5])         // ---- outer observable
+    .pipe(
+      concatMap((val)=>{
+        return of(val*5);        // ---- inner observable
+      })
+    )
+    .subscribe(console.log);
+
+//// example:-
+
+const urls = [ "https://jsonplaceholder.typicode.com/users/1", "https://jsonplaceholder.typicode.com/users/2", "https://jsonplaceholder.typicode.com/users/3" ]
+
+from(urls)
+  .pipe( 
+    concatMap((url)=>{
+      return ajax.getJSON(url);
+    })
+  )
+  .subscribe(console.log);
+
+*/
+
+
+/*(15). mergeMap operator :- it concurrently subscribe each observable */
+
+/* Use Case:- when you want to handle all inner observables concurrently [ fetch, clicks, websockets, streams, sensor data, batch jobs]*/
+
+/*
+
+// const urls = [ "https://jsonplaceholder.typicode.com/users/1", "https://jsonplaceholder.typicode.com/users/2", "https://jsonplaceholder.typicode.com/users/3" ]
+
+from(urls)
+  .pipe( 
+    mergeMap((url)=>{
+      return ajax.getJSON(url);
+    })
+  )
+  .subscribe(console.log);
+
+*/
+
+
+/*(16). switchMap operator :-  cancel or unsubscribe old requests and allow to finish only the last request, ( used for live search/autocomplete ) */
+
+/* Use Case:- Autocomplete, live data*/
+
+/*
+
+const urls = [ "https://jsonplaceholder.typicode.com/users/1", "https://jsonplaceholder.typicode.com/users/2", "https://jsonplaceholder.typicode.com/users/3" ]
+
+from(urls)
+  .pipe( 
+    switchMap((url)=>{
+      return ajax.getJSON(url);
+    })
+  )
+  .subscribe(console.log);
+
+  */
+
+
+/*(17). exhaustMap operator :-  Preventing spamming of requests( only work on one request at a time and cancel or unsubscribe the requests which comes between starting and ending of this request ) (e.g., button click → submit form). */
+
+/* Use Case:- form submission, login requests, scroll/gesture handling */
+
+/*
+
+const urls = [ 
+  "https://jsonplaceholder.typicode.com/posts/1", 
+  "https://jsonplaceholder.typicode.com/users/2", 
+  "https://jsonplaceholder.typicode.com/users/3",
+  "https://jsonplaceholder.typicode.com/users/4",
+  "https://jsonplaceholder.typicode.com/users/5",
+  "https://jsonplaceholder.typicode.com/users/6"
+]
+
+
+from(urls)
+  .pipe( 
+    exhaustMap((url)=>{
+      return ajax.getJSON(url);
+    })
+  )
+  .subscribe(console.log);
+
+  */
+
+/*(18). concatAll ,mergeAll, switchAll, exhaustAll  operator :- do just flattening( means subscribes inner observables based on concat ,merge, switch, exhaust ) */
+
+
+/*
+
+const urls = [ 
+  "https://jsonplaceholder.typicode.com/posts/1", 
+  "https://jsonplaceholder.typicode.com/users/2", 
+  "https://jsonplaceholder.typicode.com/users/3",
+  "https://jsonplaceholder.typicode.com/users/4",
+  "https://jsonplaceholder.typicode.com/users/5",
+  "https://jsonplaceholder.typicode.com/users/6"
+]
+
+
+from(urls)
+  .pipe( 
+    map((url)=>{
+      return ajax.getJSON(url);
+    }),
+    mergeAll()
+  )
+  .subscribe(console.log);
+
+  */
 
